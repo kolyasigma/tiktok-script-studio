@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Script Studio — Конструктор сценариев для TikTok-видео</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tiktokRed: '#FE2C55',
+                        tiktokCyan: '#25F4EE',
+                        darkBg: '#0F0F12',
+                        darkCard: '#18181C',
+                        darkBorder: '#27272A',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js for exporting PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F0F12;
+            color: #F4F4F5;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18181C;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3F3F46;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FE2C55;
+        }
+        .neon-glow-red {
+            box-shadow: 0 0 15px rgba(254, 44, 85, 0.35);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(37, 244, 238, 0.35);
+        }
+        .neon-text-gradient {
+            background: linear-gradient(135deg, #25F4EE 0%, #FE2C55 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Phone Mockup Screen Safe Zones */
+        .tiktok-safe-top {
+            top: 12%;
+        }
+        .tiktok-safe-bottom {
+            bottom: 18%;
+        }
+        .tiktok-safe-right {
+            right: 12px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-tiktokRed selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-darkCard/90 backdrop-blur-md border-b border-darkBorder px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-tiktokRed to-tiktokCyan p-[2px] flex items-center justify-center">
+                    <div class="w-full h-full bg-darkBg rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-clapperboard text-tiktokCyan text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                        TikTok Script <span class="neon-text-gradient">Studio</span>
+                    </h1>
+                    <p class="text-xs text-zinc-400 hidden sm:block">Конструктор вирусных сценариев</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="loadTemplateModal()" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition border border-zinc-700 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-tiktokCyan"></i>
+                    <span>Шаблоны</span>
+                </button>
+                <button onclick="openHistoryModal()" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition border border-zinc-700 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open text-tiktokRed"></i>
+                    <span>Мои сценарии</span>
+                </button>
+                <button onclick="createNewScript()" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-tiktokRed hover:bg-rose-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-tiktokRed/20">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden md:inline">Новый</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN STUDIO CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT/MIDDLE PANEL: FORM EDITOR & TIMELINE (8 COLS) -->
+        <section class="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+            
+            <!-- VIDEO SETTINGS CARD -->
+            <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                            Название или идея ролика
+                        </label>
+                        <input type="text" id="scriptTitle" value="3 ошибки при создании TikTok роликов" 
+                            oninput="updatePreview()" 
+                            placeholder="Например: Как набрать первые 10,000 подписчиков" 
+                            class="w-full bg-zinc-900 border border-zinc-700 focus:border-tiktokCyan focus:ring-1 focus:ring-tiktokCyan rounded-xl px-4 py-2.5 text-sm sm:text-base font-semibold text-white outline-none transition">
+                    </div>
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                            Ниша / Категория
+                        </label>
+                        <select id="scriptCategory" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-700 focus:border-tiktokCyan rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 outline-none transition">
+                            <option value="Эксперт / Обучение">🎓 Эксперт / Обучение</option>
+                            <option value="Бизнес / Маркетинг">💼 Бизнес / Маркетинг</option>
+                            <option value="Юмор / Развлечения">🎭 Юмор / Тренды</option>
+                            <option value="Лайфстайл / Влог">✨ Лайфстайл / Влог</option>
+                            <option value="Бьюти & Мода">💄 Бьюти & Мода</option>
+                            <option value="Обзор / Обзоры">📱 Обзор продукта</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TOTAL TIMING DURATION COUNTER -->
+                <div class="bg-zinc-900/80 rounded-xl p-3 border border-zinc-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-tiktokCyan/10 flex items-center justify-center text-tiktokCyan">
+                            <i class="fa-solid fa-stopwatch"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-zinc-400 block">Общий хронометраж</span>
+                            <span id="totalTimingText" class="text-base font-bold text-white">0 сек</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="timingStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            Идеально для TikTok (15-30с)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP BUILDER SECTIONS -->
+            <div class="space-y-4">
+
+                <!-- STEP 1: HOOK (0-3 SEC) -->
+                <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5 transition hover:border-zinc-700">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-tiktokRed text-white flex items-center justify-center text-xs font-bold">1</span>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                Крючок / Хук 
+                                <span class="text-xs text-tiktokRed font-normal bg-tiktokRed/10 border border-tiktokRed/20 px-2 py-0.5 rounded-md">Первые 0-3 сек</span>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-zinc-400">Длительность:</label>
+                            <input type="number" id="hookTime" value="3" min="1" max="10" oninput="updatePreview()" class="w-14 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-center text-white focus:border-tiktokCyan outline-none">
+                            <span class="text-xs text-zinc-500">сек</span>
+                        </div>
+                    </div>
+
+                    <!-- TEMPLATE HOOK SUGGESTIONS DROPDOWN -->
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs text-zinc-400 font-medium">Готовые вирусящие формулы хуков:</span>
+                            <button onclick="insertRandomHook()" class="text-xs text-tiktokCyan hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-dice"></i> Случайный
+                            </button>
+                        </div>
+                        <select id="hookTemplateSelect" onchange="applyHookTemplate(this.value)" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-300 outline-none focus:border-tiktokCyan">
+                            <option value="">-- Выберите шаблон или введите свой ниже --</option>
+                            <option value="Перестань делать ЭТО, если не хочешь потерять [результат]">🚫 "Перестань делать ЭТО, если не хочешь потерять..."</option>
+                            <option value="3 секретные фишки, о которых молчат эксперты в [Ниша]">🤫 "3 секретные фишки, о которых молчат эксперты..."</option>
+                            <option value="Я потратил [Время/Деньги], чтобы ты не совершал эту ошибку!">💸 "Я потратил 100 часов, чтобы ты не совершал..."</option>
+                            <option value="Никогда не покупай [Товар/Услуга], пока не узнаешь этот секрет!">⚠️ "Никогда не покупай X, пока не узнаешь..."</option>
+                            <option value="Как получить [Результат] всего за 5 минут в день без [Боль]">⚡ "Как получить X за 5 минут без Y..."</option>
+                        </select>
+                    </div>
+
+                    <!-- TEXTAREA FOR HOOK -->
+                    <textarea id="hookText" rows="2" oninput="updatePreview()" placeholder="Текст, который вы говорите или показываете на экране в первые 3 секунды..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:border-tiktokRed focus:ring-1 focus:ring-tiktokRed outline-none transition resize-none">Прекрати снимать TikTok, если ты до сих пор упускаешь эту главную детали!</textarea>
+
+                    <!-- VISUAL & SOUND SETTINGS FOR HOOK -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-zinc-800/80">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Визуальный ряд / План</label>
+                            <select id="hookVisual" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="Говорю в камеру (крупный план)">🗣️ Говорю в камеру (крупный план)</option>
+                                <option value="Быстрая смена кадров (B-roll)">🎬 Быстрая смена кадров (B-roll)</option>
+                                <option value="Крупный текст во весь экран">🔤 Крупный текст во весь экран</option>
+                                <option value="Шокирующий элемент / Эмоция">😲 Шокирующий элемент / Эмоция</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Звуковой эффект / SFX</label>
+                            <select id="hookAudio" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="⚡ Whoosh (Быстрый взмах)">⚡ Whoosh (Быстрый взмах)</option>
+                                <option value="💥 Boom Effect (Драматичный)">💥 Boom Effect (Драматичный)</option>
+                                <option value="🔊 Vinyl Scratch (Остановка)">🔊 Vinyl Scratch (Остановка)</option>
+                                <option value="🎵 Трендовый динамичный звук">🎵 Трендовый динамичный звук</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: PROBLEM / PAIN POINT -->
+                <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5 transition hover:border-zinc-700">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs font-bold">2</span>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                Проблема / Боль 
+                                <span class="text-xs text-amber-400 font-normal bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">Завязка / Интрига</span>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-zinc-400">Длительность:</label>
+                            <input type="number" id="problemTime" value="5" min="1" max="20" oninput="updatePreview()" class="w-14 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-center text-white focus:border-tiktokCyan outline-none">
+                            <span class="text-xs text-zinc-500">сек</span>
+                        </div>
+                    </div>
+
+                    <textarea id="problemText" rows="2" oninput="updatePreview()" placeholder="Опишите проблему зрителя. В чем трудность? Почему у него не получается?" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition resize-none">90% авторов тратят часы на монтаж, но видео набирает всего 200 просмотров, потому что они игнорируют правило первых секунд.</textarea>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-zinc-800/80">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Визуальный эффект / Монтаж</label>
+                            <select id="problemVisual" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="Zoom In (Наезд камеры)">🔍 Zoom In (Наезд камеры)</option>
+                                <option value="Черно-белый фильтр (Драма)">⚪ Черно-белый фильтр</option>
+                                <option value="Glitch Effect (Глитч)">👾 Glitch Effect</option>
+                                <option value="Демонстрация ошибки на скрине">📱 Скриншот ошибки</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Звуковой эффект</label>
+                            <select id="problemAudio" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="❌ Wrong Answer Sound (Ошибка)">❌ Wrong Answer Sound</option>
+                                <option value="🎻 Tension Strings (Напряжение)">🎻 Tension Strings</option>
+                                <option value="🔔 Notification Pop">🔔 Notification Pop</option>
+                                <option value="🔇 Фоновая тишина">🔇 Фоновая тишина</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: MAIN VALUE / BODY CONTENT -->
+                <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5 transition hover:border-zinc-700">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-tiktokCyan text-zinc-950 flex items-center justify-center text-xs font-bold">3</span>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                Основная часть / Польза
+                                <span class="text-xs text-tiktokCyan font-normal bg-tiktokCyan/10 border border-tiktokCyan/20 px-2 py-0.5 rounded-md">Тезисы без воды</span>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-zinc-400">Длительность:</label>
+                            <input type="number" id="bodyTime" value="12" min="1" max="180" oninput="updatePreview()" class="w-14 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-center text-white focus:border-tiktokCyan outline-none">
+                            <span class="text-xs text-zinc-500">сек</span>
+                        </div>
+                    </div>
+
+                    <textarea id="bodyText" rows="4" oninput="updatePreview()" placeholder="Пошаговые пункты, решение проблемы, инсайты или история..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:border-tiktokCyan focus:ring-1 focus:ring-tiktokCyan outline-none transition resize-none">Вот 3 шага к вирусному ролику:
+1. Меняй кадр каждые 2.5 секунды, чтобы удерживать внимание.
+2. Используй динамичные плашки с ключевыми словами.
+3. Добавляй фоновый саундтрек с громкостью не выше 15%.</textarea>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-zinc-800/80">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Стиль подачи видео</label>
+                            <select id="bodyVisual" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="B-roll + Голос за кадром">🎙️ B-roll + Голос за кадром</option>
+                                <option value="Говорю в камеру + Текст плашки">📹 Говорю в камеру + Плашки</option>
+                                <option value="Запись экрана / Туториал">💻 Запись экрана / Туториал</option>
+                                <option value="Демонстрация до / после">🔄 Демонстрация до / после</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Аудио сопровождение</label>
+                            <select id="bodyAudio" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="🎵 Спокойный Lofi бит на фоне">🎵 Спокойный Lofi бит</option>
+                                <option value="🔥 Трендовый фоновый трек">🔥 Трендовый фоновый трек</option>
+                                <option value="💡 Pop Sound при появлении тезисов">💡 Pop Sound при пунктах</option>
+                                <option value="🎙️ Чистый голосовой фокус">🎙️ Чистый голосовой фокус</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: CALL TO ACTION (CTA) -->
+                <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5 transition hover:border-zinc-700">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">4</span>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                Призыв к действию / CTA
+                                <span class="text-xs text-emerald-400 font-normal bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">Конверсия в действия</span>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-zinc-400">Длительность:</label>
+                            <input type="number" id="ctaTime" value="4" min="1" max="15" oninput="updatePreview()" class="w-14 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-center text-white focus:border-tiktokCyan outline-none">
+                            <span class="text-xs text-zinc-500">сек</span>
+                        </div>
+                    </div>
+
+                    <!-- PRESET CTA BUTTONS -->
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <button onclick="applyCTAPreset('Сохрани это видео, чтобы не потерять!')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-md transition border border-zinc-700">
+                            💾 Сохрани видео
+                        </button>
+                        <button onclick="applyCTAPreset('Подпишись, чтобы не пропустить 2 часть!')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-md transition border border-zinc-700">
+                            ➕ Подпишись
+                        </button>
+                        <button onclick="applyCTAPreset('Напиши в комментариях твое мнение!')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-md transition border border-zinc-700">
+                            💬 Пиши комментарий
+                        </button>
+                        <button onclick="applyCTAPreset('Переходи по ссылке в шапке профиля!')" class="text-[11px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-md transition border border-zinc-700">
+                            🔗 Ссылка в шапке
+                        </button>
+                    </div>
+
+                    <textarea id="ctaText" rows="2" oninput="updatePreview()" placeholder="Что именно должен сделать зритель после просмотра?" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition resize-none">Сохрани это видео, чтобы не потерять готовый чек-лист, и подпишись на профиль!</textarea>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-zinc-800/80">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Визуальный акцент CTA</label>
+                            <select id="ctaVisual" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="Указание пальцем на стрелку/профиль">👉 Указание на профиль</option>
+                                <option value="Анимированная плашка ПОДПИШИСЬ">🔴 Плашка "Подпишись"</option>
+                                <option value="Текст в центре экрана + Стикер">🎯 Текст в центре экрана</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Аудио эффект CTA</label>
+                            <select id="ctaAudio" onchange="updatePreview()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 outline-none">
+                                <option value="🔔 Ding Sound (Звонок)">🔔 Ding Sound (Звонок)</option>
+                                <option value="✨ Magic Sparkle SFX">✨ Magic Sparkle SFX</option>
+                                <option value="👏 Легкие аплодисменты">👏 Легкие аплодисменты</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACTION BUTTONS ROW -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-darkCard border border-darkBorder rounded-2xl p-4">
+                <button onclick="saveCurrentScript()" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold rounded-xl transition flex items-center gap-2 text-sm border border-zinc-700">
+                    <i class="fa-solid fa-floppy-disk text-tiktokCyan"></i>
+                    <span>Сохранить в истории</span>
+                </button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="copyFormattedScriptText()" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition flex items-center gap-2 text-sm border border-zinc-700">
+                        <i class="fa-solid fa-copy text-zinc-400"></i>
+                        <span>Скопировать текст</span>
+                    </button>
+                    <button onclick="exportToPDF()" class="px-5 py-2.5 bg-gradient-to-r from-tiktokRed to-rose-600 hover:opacity-90 text-white font-bold rounded-xl transition flex items-center gap-2 text-sm shadow-lg shadow-tiktokRed/25">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Скачать PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIRAL CHECKLIST WIDGET -->
+            <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5">
+                <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-tiktokRed"></i>
+                    Чек-лист вирусного видео
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-zinc-300" id="checklistContainer">
+                    <label class="flex items-center gap-2.5 p-2 bg-zinc-900/60 rounded-lg cursor-pointer hover:bg-zinc-900 border border-zinc-800">
+                        <input type="checkbox" id="chk1" checked onchange="updateChecklistProgress()" class="rounded border-zinc-700 text-tiktokRed focus:ring-0">
+                        <span>Сильный Крючок в первые 3 секунды</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 p-2 bg-zinc-900/60 rounded-lg cursor-pointer hover:bg-zinc-900 border border-zinc-800">
+                        <input type="checkbox" id="chk2" checked onchange="updateChecklistProgress()" class="rounded border-zinc-700 text-tiktokRed focus:ring-0">
+                        <span>Озвучивание боли / интриги AUDIENCE</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 p-2 bg-zinc-900/60 rounded-lg cursor-pointer hover:bg-zinc-900 border border-zinc-800">
+                        <input type="checkbox" id="chk3" checked onchange="updateChecklistProgress()" class="rounded border-zinc-700 text-tiktokRed focus:ring-0">
+                        <span>Динамичная польза (без лишней воды)</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 p-2 bg-zinc-900/60 rounded-lg cursor-pointer hover:bg-zinc-900 border border-zinc-800">
+                        <input type="checkbox" id="chk4" checked onchange="updateChecklistProgress()" class="rounded border-zinc-700 text-tiktokRed focus:ring-0">
+                        <span>Четкий и понятный призыв к действию (CTA)</span>
+                    </label>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: PHONE MOCKUP & PRO TIPS (4-5 COLS) -->
+        <section class="lg:col-span-5 xl:col-span-4 flex flex-col gap-6 sticky top-20 self-start">
+            
+            <!-- SMARTPHONE MOCKUP PREVIEW CARD -->
+            <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 shadow-2xl flex flex-col items-center">
+                <div class="flex items-center justify-between w-full mb-3 px-1">
+                    <span class="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-tiktokRed animate-pulse"></span>
+                        Интерактивное превью
+                    </span>
+                    <span class="text-[11px] text-zinc-500 uppercase tracking-wider">Формат 9:16</span>
+                </div>
+
+                <!-- PHONE CONTAINER -->
+                <div class="relative w-[270px] h-[520px] bg-black rounded-[40px] border-[6px] border-zinc-800 shadow-2xl overflow-hidden flex flex-col justify-between p-4 select-none">
+                    
+                    <!-- TOP PHONE BAR (CAM, NOTCH, SOUND BADGE) -->
+                    <div class="absolute top-2 left-0 right-0 flex justify-center z-20">
+                        <div class="w-24 h-4 bg-zinc-900 rounded-b-xl flex items-center justify-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-zinc-800"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-zinc-800"></div>
+                        </div>
+                    </div>
+
+                    <!-- TIKTOK OVERLAY TOP NAVIGATION -->
+                    <div class="relative z-10 pt-4 flex items-center justify-between text-white text-xs font-semibold">
+                        <span class="opacity-60">Подписки</span>
+                        <span class="border-b-2 border-white pb-0.5">Для вас</span>
+                        <i class="fa-solid fa-magnifying-glass opacity-80"></i>
+                    </div>
+
+                    <!-- CENTER CONTENT DYNAMIC SCRIPT STEP PREVIEW -->
+                    <div id="phoneDynamicContent" class="relative z-10 flex flex-col justify-center items-center text-center my-auto px-2">
+                        <!-- Dynamic hook / block text badge -->
+                        <span id="phoneStepBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tiktokRed text-white mb-2 uppercase tracking-wide">
+                            Хук (0-3 сек)
+                        </span>
+                        
+                        <!-- Main active text preview -->
+                        <p id="phoneTextOverlay" class="text-white font-extrabold text-base leading-snug drop-shadow-md bg-black/40 backdrop-blur-sm p-2.5 rounded-xl border border-white/10">
+                            Прекрати снимать TikTok, если ты до сих пор упускаешь эту главную деталь!
+                        </p>
+
+                        <!-- Visual & Sound effect indicator tags -->
+                        <div class="flex flex-wrap justify-center gap-1 mt-3">
+                            <span id="phoneVisualTag" class="text-[10px] bg-zinc-900/90 text-tiktokCyan px-2 py-0.5 rounded border border-tiktokCyan/30 flex items-center gap-1">
+                                <i class="fa-solid fa-video"></i> <span>Говорю в камеру</span>
+                            </span>
+                            <span id="phoneAudioTag" class="text-[10px] bg-zinc-900/90 text-amber-300 px-2 py-0.5 rounded border border-amber-300/30 flex items-center gap-1">
+                                <i class="fa-solid fa-music"></i> <span>Whoosh</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE TIKTOK ICONS MOCKUP -->
+                    <div class="absolute right-2 bottom-20 z-10 flex flex-col items-center gap-3 text-white">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800/80 border border-white/20 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-heart text-tiktokRed"></i>
+                            </div>
+                            <span class="text-[9px] font-medium mt-0.5">24.5k</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800/80 border border-white/20 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-comment"></i>
+                            </div>
+                            <span class="text-[9px] font-medium mt-0.5">842</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800/80 border border-white/20 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-bookmark text-amber-400"></i>
+                            </div>
+                            <span class="text-[9px] font-medium mt-0.5">5.1k</span>
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM TIKTOK CAPTION MOCKUP -->
+                    <div class="relative z-10 text-left text-white text-[11px] space-y-1">
+                        <div class="font-bold flex items-center gap-1">
+                            @creator_pro <i class="fa-solid fa-circle-check text-tiktokCyan text-[10px]"></i>
+                        </div>
+                        <p id="phoneCaptionTitle" class="line-clamp-2 text-zinc-200 text-[10px]">
+                            3 ошибки при создании TikTok роликов #smm #tiktok #контент
+                        </p>
+                        <div class="flex items-center gap-1.5 text-zinc-400 text-[9px]">
+                            <i class="fa-solid fa-music animate-spin text-[8px]"></i>
+                            <span class="truncate w-32">Оригинальный звук - TikTok Studio</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PREVIEW STEP SWITCHER CONTROLS -->
+                <div class="flex items-center justify-center gap-1.5 mt-4 w-full">
+                    <button onclick="previewStep('hook')" class="px-2.5 py-1 text-xs rounded-lg bg-tiktokRed/20 text-tiktokRed border border-tiktokRed/30 hover:bg-tiktokRed/30 font-medium transition">
+                        1. Хук
+                    </button>
+                    <button onclick="previewStep('problem')" class="px-2.5 py-1 text-xs rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 font-medium transition">
+                        2. Боль
+                    </button>
+                    <button onclick="previewStep('body')" class="px-2.5 py-1 text-xs rounded-lg bg-tiktokCyan/20 text-tiktokCyan border border-tiktokCyan/30 hover:bg-tiktokCyan/30 font-medium transition">
+                        3. Полезность
+                    </button>
+                    <button onclick="previewStep('cta')" class="px-2.5 py-1 text-xs rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 font-medium transition">
+                        4. CTA
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRO TIPS & RETENTION RECOMMENDATIONS -->
+            <div class="bg-darkCard border border-darkBorder rounded-2xl p-4 sm:p-5">
+                <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    Советы для удержания внимания
+                </h3>
+                <ul class="text-xs text-zinc-400 space-y-2 list-disc pl-4">
+                    <li>Размещайте важный текст в <span class="text-zinc-200 font-medium">безопасной зоне</span> (не перекрывайте иконки лайков справа).</li>
+                    <li>Меняйте визуал или ракурс каждые <span class="text-zinc-200 font-medium">2-3 секунды</span>.</li>
+                    <li>Добавляйте <span class="text-zinc-200 font-medium">звуковые эффекты (SFX)</span> при появлении ключевых слов.</li>
+                </ul>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- HIDDEN PRINTABLE CONTAINER FOR PDF EXPORT -->
+    <div id="pdfExportContainer" class="hidden p-8 bg-white text-slate-900 font-sans">
+        <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-center">
+            <div>
+                <h1 id="pdfTitle" class="text-2xl font-black text-slate-900 uppercase">Сценарий TikTok</h1>
+                <p id="pdfCategory" class="text-sm font-semibold text-rose-600">Категория: Эксперт / Обучение</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-slate-500">TikTok Script Studio</p>
+                <p id="pdfTiming" class="text-sm font-bold text-slate-800">Хронометраж: 0 сек</p>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- HOOK SECTION -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-rose-600 text-sm uppercase">1. КРЮЧОК / ХУК (<span id="pdfHookTime">3</span> сек)</span>
+                    <span id="pdfHookVisual" class="text-xs bg-slate-200 px-2 py-0.5 rounded">Говорю в камеру</span>
+                </div>
+                <p id="pdfHookText" class="text-slate-800 font-medium text-base mb-2"></p>
+                <div class="text-xs text-slate-500 italic">Звук: <span id="pdfHookAudio">Whoosh</span></div>
+            </div>
+
+            <!-- PROBLEM SECTION -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-amber-600 text-sm uppercase">2. ПРОБЛЕМА / БОЛЬ (<span id="pdfProblemTime">5</span> сек)</span>
+                    <span id="pdfProblemVisual" class="text-xs bg-slate-200 px-2 py-0.5 rounded">Zoom In</span>
+                </div>
+                <p id="pdfProblemText" class="text-slate-800 font-medium text-base mb-2"></p>
+                <div class="text-xs text-slate-500 italic">Звук: <span id="pdfProblemAudio">Wrong Answer</span></div>
+            </div>
+
+            <!-- BODY SECTION -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-cyan-600 text-sm uppercase">3. ОСНОВНАЯ ЧАСТЬ / ПОЛЬЗА (<span id="pdfBodyTime">12</span> сек)</span>
+                    <span id="pdfBodyVisual" class="text-xs bg-slate-200 px-2 py-0.5 rounded">B-roll</span>
+                </div>
+                <p id="pdfBodyText" class="text-slate-800 font-medium text-base whitespace-pre-line mb-2"></p>
+                <div class="text-xs text-slate-500 italic">Звук: <span id="pdfBodyAudio">Lofi</span></div>
+            </div>
+
+            <!-- CTA SECTION -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-emerald-600 text-sm uppercase">4. ПРИЗЫВ К ДЕЙСТВИЮ / CTA (<span id="pdfCtaTime">4</span> сек)</span>
+                    <span id="pdfCtaVisual" class="text-xs bg-slate-200 px-2 py-0.5 rounded">Стрелка</span>
+                </div>
+                <p id="pdfCtaText" class="text-slate-800 font-medium text-base mb-2"></p>
+                <div class="text-xs text-slate-500 italic">Звук: <span id="pdfCtaAudio">Ding</span></div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-slate-200 text-center text-xs text-slate-400">
+            Сгенерировано в TikTok Script Studio • Готово к съемкам
+        </div>
+    </div>
+
+    <!-- MODAL 1: TEMPLATES GALLERY -->
+    <div id="templatesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-darkCard border border-darkBorder rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-tiktokCyan"></i>
+                    Быстрый старт из шаблонов
+                </h3>
+                <button onclick="closeTemplateModal()" class="text-zinc-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="templatesGrid">
+                <!-- TEMPLATE 1 -->
+                <div onclick="applyFullTemplate('expert')" class="bg-zinc-900 border border-zinc-800 hover:border-tiktokCyan p-4 rounded-xl cursor-pointer transition group">
+                    <div class="text-tiktokCyan font-bold text-sm mb-1 flex items-center justify-between">
+                        <span>🎓 Экспертный разбор</span>
+                        <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition"></i>
+                    </div>
+                    <p class="text-xs text-zinc-400">Разбор частой ошибки аудитории с полезным решением и призывом сохранить.</p>
+                </div>
+                <!-- TEMPLATE 2 -->
+                <div onclick="applyFullTemplate('trend')" class="bg-zinc-900 border border-zinc-800 hover:border-tiktokRed p-4 rounded-xl cursor-pointer transition group">
+                    <div class="text-tiktokRed font-bold text-sm mb-1 flex items-center justify-between">
+                        <span>🔥 Трендовый формата / Секрет</span>
+                        <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition"></i>
+                    </div>
+                    <p class="text-xs text-zinc-400">Завлекающий секретный лайфхак ("3 фишки, о которых молчат...").</p>
+                </div>
+                <!-- TEMPLATE 3 -->
+                <div onclick="applyFullTemplate('review')" class="bg-zinc-900 border border-zinc-800 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition group">
+                    <div class="text-amber-400 font-bold text-sm mb-1 flex items-center justify-between">
+                        <span>📱 Быстрый обзор продукта</span>
+                        <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition"></i>
+                    </div>
+                    <p class="text-xs text-zinc-400">Краткая демонстрация товара с реакцией "Стоит ли брать?".</p>
+                </div>
+                <!-- TEMPLATE 4 -->
+                <div onclick="applyFullTemplate('story')" class="bg-zinc-900 border border-zinc-800 hover:border-emerald-400 p-4 rounded-xl cursor-pointer transition group">
+                    <div class="text-emerald-400 font-bold text-sm mb-1 flex items-center justify-between">
+                        <span>✨ История / Личный опыт</span>
+                        <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition"></i>
+                    </div>
+                    <p class="text-xs text-zinc-400">Формат "Как я сэкономил / заработал / изменил за 30 дней".</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SAVED SCRIPTS HISTORY -->
+    <div id="historyModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-darkCard border border-darkBorder rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open text-tiktokRed"></i>
+                    Сохраненные сценарии
+                </h3>
+                <button onclick="closeHistoryModal()" class="text-zinc-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div id="historyListContainer" class="space-y-3">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-tiktokCyan"></i>
+        <span id="toastMessage">Сценарий скопирован!</span>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-darkBorder py-4 px-4 bg-darkCard text-center text-xs text-zinc-500">
+        <p>TikTok Script Studio © 2026 — Пошаговый конструктор сценариев для вирусных видео</p>
+    </footer>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // GLOBAL STATE
+        let activePreviewStep = 'hook';
+
+        // INITIALIZE ON LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            updatePreview();
+        });
+
+        // CALCULATE AND UPDATE TIMING + PREVIEW DATA
+        function updatePreview() {
+            const hookTime = parseInt(document.getElementById('hookTime').value) || 0;
+            const problemTime = parseInt(document.getElementById('problemTime').value) || 0;
+            const bodyTime = parseInt(document.getElementById('bodyTime').value) || 0;
+            const ctaTime = parseInt(document.getElementById('ctaTime').value) || 0;
+
+            const totalSeconds = hookTime + problemTime + bodyTime + ctaTime;
+            
+            // Update Timing Badge Text
+            document.getElementById('totalTimingText').innerText = `${totalSeconds} сек`;
+
+            // Status Badge Logic
+            const badge = document.getElementById('timingStatusBadge');
+            if (totalSeconds <= 15) {
+                badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                badge.innerText = "⚡ Ультра-короткий ролик (до 15с)";
+            } else if (totalSeconds <= 35) {
+                badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-tiktokCyan/10 text-tiktokCyan border border-tiktokCyan/20";
+                badge.innerText = "🔥 Оптимально для TikTok (15-35с)";
+            } else {
+                badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                badge.innerText = "📖 Длинный экспертный формат (30с+)";
+            }
+
+            // Caption title update
+            const title = document.getElementById('scriptTitle').value || 'Без названия';
+            document.getElementById('phoneCaptionTitle').innerText = `${title} #tiktok #shorts`;
+
+            // Render Active Step in Phone Mockup
+            previewStep(activePreviewStep);
+        }
+
+        // SWITCH PHONE MOCKUP STEP PREVIEW
+        function previewStep(step) {
+            activePreviewStep = step;
+            const badge = document.getElementById('phoneStepBadge');
+            const textOverlay = document.getElementById('phoneTextOverlay');
+            const visualTag = document.getElementById('phoneVisualTag');
+            const audioTag = document.getElementById('phoneAudioTag');
+
+            if (step === 'hook') {
+                badge.innerText = `Хук (0-${document.getElementById('hookTime').value} сек)`;
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tiktokRed text-white mb-2 uppercase tracking-wide";
+                textOverlay.innerText = document.getElementById('hookText').value || 'Введите текст хука...';
+                visualTag.innerHTML = `<i class="fa-solid fa-video"></i> <span>${document.getElementById('hookVisual').value}</span>`;
+                audioTag.innerHTML = `<i class="fa-solid fa-music"></i> <span>${document.getElementById('hookAudio').value}</span>`;
+            } else if (step === 'problem') {
+                badge.innerText = `Проблема (${document.getElementById('problemTime').value} сек)`;
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white mb-2 uppercase tracking-wide";
+                textOverlay.innerText = document.getElementById('problemText').value || 'Введите проблему...';
+                visualTag.innerHTML = `<i class="fa-solid fa-video"></i> <span>${document.getElementById('problemVisual').value}</span>`;
+                audioTag.innerHTML = `<i class="fa-solid fa-music"></i> <span>${document.getElementById('problemAudio').value}</span>`;
+            } else if (step === 'body') {
+                badge.innerText = `Польза (${document.getElementById('bodyTime').value} сек)`;
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tiktokCyan text-zinc-950 mb-2 uppercase tracking-wide";
+                textOverlay.innerText = document.getElementById('bodyText').value || 'Введите основные тезисы...';
+                visualTag.innerHTML = `<i class="fa-solid fa-video"></i> <span>${document.getElementById('bodyVisual').value}</span>`;
+                audioTag.innerHTML = `<i class="fa-solid fa-music"></i> <span>${document.getElementById('bodyAudio').value}</span>`;
+            } else if (step === 'cta') {
+                badge.innerText = `CTA (${document.getElementById('ctaTime').value} сек)`;
+                badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white mb-2 uppercase tracking-wide";
+                textOverlay.innerText = document.getElementById('ctaText').value || 'Введите призыв к действию...';
+                visualTag.innerHTML = `<i class="fa-solid fa-video"></i> <span>${document.getElementById('ctaVisual').value}</span>`;
+                audioTag.innerHTML = `<i class="fa-solid fa-music"></i> <span>${document.getElementById('ctaAudio').value}</span>`;
+            }
+        }
+
+        // HOOK TEMPLATE APPLIER
+        function applyHookTemplate(val) {
+            if (!val) return;
+            document.getElementById('hookText').value = val;
+            updatePreview();
+            showToast("Шаблон хука применен!");
+        }
+
+        function insertRandomHook() {
+            const select = document.getElementById('hookTemplateSelect');
+            const options = Array.from(select.options).filter(o => o.value !== "");
+            const randomOpt = options[Math.floor(Math.random() * options.length)];
+            select.value = randomOpt.value;
+            applyHookTemplate(randomOpt.value);
+        }
+
+        // CTA PRESET APPLIER
+        function applyCTAPreset(text) {
+            document.getElementById('ctaText').value = text;
+            updatePreview();
+            previewStep('cta');
+            showToast("Призыв к действию обновлен!");
+        }
+
+        // COPY FORMATTED SCRIPT TEXT TO CLIPBOARD
+        function copyFormattedScriptText() {
+            const title = document.getElementById('scriptTitle').value || 'Без названия';
+            const category = document.getElementById('scriptCategory').value;
+            const hook = document.getElementById('hookText').value;
+            const problem = document.getElementById('problemText').value;
+            const body = document.getElementById('bodyText').value;
+            const cta = document.getElementById('ctaText').value;
+
+            const textToCopy = `🎬 СЦЕНАРИЙ TIKTOK: "${title}" (${category})
+------------------------------------------------
+1️⃣ ХУК (0-${document.getElementById('hookTime').value} сек)
+Визуал: ${document.getElementById('hookVisual').value}
+Звук: ${document.getElementById('hookAudio').value}
+Текст: ${hook}
+
+2️⃣ ПРОБЛЕМА (${document.getElementById('problemTime').value} сек)
+Визуал: ${document.getElementById('problemVisual').value}
+Звук: ${document.getElementById('problemAudio').value}
+Текст: ${problem}
+
+3️⃣ ПОЛЬЗА / ТЕЗИСЫ (${document.getElementById('bodyTime').value} сек)
+Визуал: ${document.getElementById('bodyVisual').value}
+Звук: ${document.getElementById('bodyAudio').value}
+Текст: 
+${body}
+
+4️⃣ CTA / ПРИЗЫВ (${document.getElementById('ctaTime').value} сек)
+Визуал: ${document.getElementById('ctaVisual').value}
+Звук: ${document.getElementById('ctaAudio').value}
+Текст: ${cta}
+------------------------------------------------
+Готово к съемке! ✨`;
+
+            // Clipboard copy fallbacks
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+
+            showToast("Текст сценария скопирован!");
+        }
+
+        // EXPORT SCRIPT TO PDF DOCUMENT
+        function exportToPDF() {
+            // Populate PDF element
+            document.getElementById('pdfTitle').innerText = document.getElementById('scriptTitle').value || 'Без названия';
+            document.getElementById('pdfCategory').innerText = `Категория: ${document.getElementById('scriptCategory').value}`;
+            document.getElementById('pdfTiming').innerText = `Хронометраж: ${document.getElementById('totalTimingText').innerText}`;
+
+            document.getElementById('pdfHookTime').innerText = document.getElementById('hookTime').value;
+            document.getElementById('pdfHookVisual').innerText = document.getElementById('hookVisual').value;
+            document.getElementById('pdfHookText').innerText = document.getElementById('hookText').value;
+            document.getElementById('pdfHookAudio').innerText = document.getElementById('hookAudio').value;
+
+            document.getElementById('pdfProblemTime').innerText = document.getElementById('problemTime').value;
+            document.getElementById('pdfProblemVisual').innerText = document.getElementById('problemVisual').value;
+            document.getElementById('pdfProblemText').innerText = document.getElementById('problemText').value;
+            document.getElementById('pdfProblemAudio').innerText = document.getElementById('problemAudio').value;
+
+            document.getElementById('pdfBodyTime').innerText = document.getElementById('bodyTime').value;
+            document.getElementById('pdfBodyVisual').innerText = document.getElementById('bodyVisual').value;
+            document.getElementById('pdfBodyText').innerText = document.getElementById('bodyText').value;
+            document.getElementById('pdfBodyAudio').innerText = document.getElementById('bodyAudio').value;
+
+            document.getElementById('pdfCtaTime').innerText = document.getElementById('ctaTime').value;
+            document.getElementById('pdfCtaVisual').innerText = document.getElementById('ctaVisual').value;
+            document.getElementById('pdfCtaText').innerText = document.getElementById('ctaText').value;
+            document.getElementById('pdfCtaAudio').innerText = document.getElementById('ctaAudio').value;
+
+            const element = document.getElementById('pdfExportContainer');
+            element.classList.remove('hidden');
+
+            const opt = {
+                margin:       10,
+                filename:     `TikTok_Script_${(document.getElementById('scriptTitle').value || 'Studio').replace(/[^a-z0-9а-я]/gi, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.add('hidden');
+                showToast("PDF успешно сохранен!");
+            });
+        }
+
+        // SAVE & LOAD HISTORY (LOCALSTORAGE)
+        function saveCurrentScript() {
+            const scriptData = {
+                id: Date.now(),
+                title: document.getElementById('scriptTitle').value || 'Без названия',
+                category: document.getElementById('scriptCategory').value,
+                hookTime: document.getElementById('hookTime').value,
+                hookText: document.getElementById('hookText').value,
+                problemTime: document.getElementById('problemTime').value,
+                problemText: document.getElementById('problemText').value,
+                bodyTime: document.getElementById('bodyTime').value,
+                bodyText: document.getElementById('bodyText').value,
+                ctaTime: document.getElementById('ctaTime').value,
+                ctaText: document.getElementById('ctaText').value,
+                savedAt: new Date().toLocaleDateString('ru-RU')
+            };
+
+            let history = JSON.parse(localStorage.getItem('tiktok_script_history') || '[]');
+            history.unshift(scriptData);
+            localStorage.setItem('tiktok_script_history', JSON.stringify(history));
+            showToast("Сценарий сохранен в историю!");
+        }
+
+        function openHistoryModal() {
+            const container = document.getElementById('historyListContainer');
+            let history = JSON.parse(localStorage.getItem('tiktok_script_history') || '[]');
+
+            if (history.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-zinc-500 text-sm">Нет сохраненных сценариев</div>`;
+            } else {
+                container.innerHTML = history.map(item => `
+                    <div class="bg-zinc-900 border border-zinc-800 p-3.5 rounded-xl flex items-center justify-between gap-3">
+                        <div>
+                            <h4 class="text-sm font-bold text-white">${item.title}</h4>
+                            <p class="text-xs text-zinc-400">${item.category} • ${item.savedAt}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="loadScriptFromHistory(${item.id})" class="px-3 py-1.5 text-xs font-semibold bg-tiktokCyan/10 text-tiktokCyan rounded-lg hover:bg-tiktokCyan/20 transition">
+                                Загрузить
+                            </button>
+                            <button onclick="deleteScriptFromHistory(${item.id})" class="px-2 py-1.5 text-xs text-zinc-500 hover:text-tiktokRed transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('historyModal').classList.remove('hidden');
+            document.getElementById('historyModal').classList.add('flex');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.add('hidden');
+            document.getElementById('historyModal').classList.remove('flex');
+        }
+
+        function loadScriptFromHistory(id) {
+            let history = JSON.parse(localStorage.getItem('tiktok_script_history') || '[]');
+            const item = history.find(s => s.id === id);
+            if (item) {
+                document.getElementById('scriptTitle').value = item.title;
+                document.getElementById('scriptCategory').value = item.category;
+                document.getElementById('hookTime').value = item.hookTime;
+                document.getElementById('hookText').value = item.hookText;
+                document.getElementById('problemTime').value = item.problemTime;
+                document.getElementById('problemText').value = item.problemText;
+                document.getElementById('bodyTime').value = item.bodyTime;
+                document.getElementById('bodyText').value = item.bodyText;
+                document.getElementById('ctaTime').value = item.ctaTime;
+                document.getElementById('ctaText').value = item.ctaText;
+
+                updatePreview();
+                closeHistoryModal();
+                showToast("Сценарий загружен!");
+            }
+        }
+
+        function deleteScriptFromHistory(id) {
+            let history = JSON.parse(localStorage.getItem('tiktok_script_history') || '[]');
+            history = history.filter(s => s.id !== id);
+            localStorage.setItem('tiktok_script_history', JSON.stringify(history));
+            openHistoryModal();
+            showToast("Сценарий удален!");
+        }
+
+        function createNewScript() {
+            document.getElementById('scriptTitle').value = "";
+            document.getElementById('hookText').value = "";
+            document.getElementById('problemText').value = "";
+            document.getElementById('bodyText').value = "";
+            document.getElementById('ctaText').value = "";
+            updatePreview();
+            showToast("Создан новый пустой сценарий");
+        }
+
+        // FULL TEMPLATE APPLY
+        function loadTemplateModal() {
+            document.getElementById('templatesModal').classList.remove('hidden');
+            document.getElementById('templatesModal').classList.add('flex');
+        }
+
+        function closeTemplateModal() {
+            document.getElementById('templatesModal').classList.add('hidden');
+            document.getElementById('templatesModal').classList.remove('flex');
+        }
+
+        function applyFullTemplate(type) {
+            if (type === 'expert') {
+                document.getElementById('scriptTitle').value = "3 критические ошибки в твоем профиле";
+                document.getElementById('scriptCategory').value = "Эксперт / Обучение";
+                document.getElementById('hookText').value = "Перестань выкладывать видео, пока не исправишь эту главную ошибку!";
+                document.getElementById('problemText').value = "Ты выкладываешь ролики каждый день, но алгоритмы не дают больше 200 просмотров.";
+                document.getElementById('bodyText').value = "1. Поставь чёткое описание в шапку.\n2. Добавляй текстовый хук на экран.\n3. Снимай с хорошим освещением.";
+                document.getElementById('ctaText').value = "Сохрани, чтобы проверить свой профиль прямо сейчас!";
+            } else if (type === 'trend') {
+                document.getElementById('scriptTitle').value = "Секретный лайфхак, о котором молчат";
+                document.getElementById('scriptCategory').value = "Юмор / Развлечения";
+                document.getElementById('hookText').value = "3 секретные фишки, которые сэкономят тебе 10 часов на неделе!";
+                document.getElementById('problemText').value = "Почти никто не знает про эту скрытую функцию в настройках.";
+                document.getElementById('bodyText').value = "Заходишь в настройки -> Экран -> Включаешь авто-оптимизацию. Готово!";
+                document.getElementById('ctaText').value = "Подпишись, завтра выйдет вторая часть!";
+            } else if (type === 'review') {
+                document.getElementById('scriptTitle').value = "Честный обзор гаджета";
+                document.getElementById('scriptCategory').value = "Обзор / Обзоры";
+                document.getElementById('hookText').value = "Никогда не покупай это устройство, пока не посмотришь этот ролик!";
+                document.getElementById('problemText').value = "Все блогеры хвалят его, но у него есть один критический минус.";
+                document.getElementById('bodyText').value = "Плюсы: отличный экран и батарея. Минус: греется при долгой съемке.";
+                document.getElementById('ctaText').value = "Напиши в комментариях, купил бы себе такой?";
+            } else if (type === 'story') {
+                document.getElementById('scriptTitle').value = "Как я изменил результат за 30 дней";
+                document.getElementById('scriptCategory').value = "Лайфстайл / Влог";
+                document.getElementById('hookText').value = "Я потратил 30 дней, чтобы проверить этот вирусный тренд...";
+                document.getElementById('problemText').value = "Сначала всё казалось бесполезным и я хотел сдаться.";
+                document.getElementById('bodyText').value = "Но на 14 день просмотры взлетели! Главное — не сдаваться и делать регулярно.";
+                document.getElementById('ctaText').value = "Переходи в шапку профиля за полным гайдом!";
+            }
+
+            updatePreview();
+            closeTemplateModal();
+            showToast("Шаблон успешно применен!");
+        }
+
+        // TOAST NOTIFICATION UTILITY
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function updateChecklistProgress() {
+            // Optional visual state updates
+        }
+    </script>
+</body>
+</html>
